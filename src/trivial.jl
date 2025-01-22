@@ -56,14 +56,14 @@ Base.:/(x::Trivial, y::Trivial) = x*inv(y)
 function Base.exp(x::Trivial)
     term = 1
     n = 0
-    sum = 1.
+    sum = 0.
 
     while abs(term) >= eps(sum|>abs)
         n += 1
         term *= x/n
         sum += term
     end
-    return sum
+    return sum + 1
 end
 
 # Output
