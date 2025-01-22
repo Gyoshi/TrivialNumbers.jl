@@ -50,6 +50,7 @@ Base.abs2(x::Trivial{T}) where {T} = convert(T, x*conj(x))
 Base.abs(x::Trivial) = sqrt(abs2(x))
 Base.inv(x::Trivial) = Trivial(duplet(conj(x))./abs2(x)...)
 Base.:/(x::Trivial, y::Trivial) = x*inv(y)
+# Base.:/(x::Trivial, y::Trivial) = Trivial(((x.a*y.a + x.a*y.b + x.b*y.b, -x.a*y.b + x.b*y.a)./((y.a+y.b)^2-y.a*y.b))...)
 
 # Math
 function Base.exp(x::Trivial)
