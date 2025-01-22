@@ -81,6 +81,31 @@ function trivial_show(io::IO, x::Trivial{T}) where {T}
 end
 Base.show(io::IO, x::Trivial) = trivial_show(io, x)
 
+# Relations
+function sign(x::Trivial)
+    diffs = [x.a, x.b, -x.a-x.b]
+    nzeros = sum(diffs.==0...)
+
+    kind = nzeros == 0 ? :spiral : nzeros == 1 ? :isosceles : :zero
+    if kind == :zero
+        return (;kind, polarity=0, rotation=1)
+    end
+
+    polarity = 0
+    rotation = 1
+    if kind == :spiral
+        npos = sum(diffs .> 0) # number of counterclockwise increases
+        polarity = npos == 2 ? +1 : -1
+        rotation = findmin(diffs - circshift(diffs, 1))[2]
+    elseif kind == :isosceles
+        npos = sum(diffs - circshift(diffs, 1) .> 0) # number of positive values in triplet
+        polarity = npos == 2 ? -1 : +1
+        rotation = mod(findfirst(diffs .== 0) - 2, 3) + 1
+    end 
+
+    return (;kind, polarity, rotation)
+end
+
 # ⦦ ⦧
 
 # ⧄ ⧅
