@@ -41,6 +41,8 @@ recto(x::Real) = recto(Trivial(x))
 const ╱ = verso(1)
 const ╲ = recto(1)
 
+∥(x::Trivial, y::Trivial) = -(recto(x)+verso(y))
+
 Base.:*(x::Trivial, y::Trivial) = Trivial(x.a*y.a-x.b*y.b, (x.a + x.b)*y.b + x.b*y.a)
 # Base.:*(x::Trivial, y::Trivial) = Trivial(reduce(.+, n.*triplet(op(y)) for (n, op) in zip(triplet(x), [x -> x, verso, recto]))...)
 conj(x::Trivial) = Trivial(x.a+x.b, -x.b)
