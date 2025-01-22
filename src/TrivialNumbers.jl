@@ -10,4 +10,5 @@ export
     recto
     ╱
     ╲
+    ∥
 end

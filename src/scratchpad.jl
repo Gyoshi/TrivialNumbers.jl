@@ -1,3 +1,4 @@
+using Plots
 include("trivial.jl")
 
 x = (1+2╱)
@@ -6,14 +7,26 @@ y = (2+3╱)
 inv(1 + 2╱)
 x/y
 y/y*x
+x∥y
 
 # exp
 exp(Trivial(-1,1)) 
 exp(╱) |> abs
 
 d = 0:0.01:10
+scatter(triplet.(exp.(d.*(╱))), aspect_ratio=:equal)
+plot!(xlims=(0,1), ylims=(0,1), zlims=(0,1), aspect_ratio=:equal)
 
-scatter(exp.(d.*(╱)))
+scatter(triplet.(exp.(d.*(0.5 + ╱))))
+plot(exp.(d.*(0.5+╲)).|>abs)
+plot(exp.(d.*(0.5+╲)).|>real)
+plot(exp.(d.*(cis(deg2rad(-120))).|>Base.real))
+
+x = 0.5+╲
+exp(x)
+exp(x) |> abs
+
+(0.5 + ╱)^2
 
 # unit circle
 
@@ -28,7 +41,6 @@ for i = 1:20, j = 0:i
 end
 circle
 
-using Plots
 as = bs = 1:100
 a = b = 2
 function norm(a, b)
@@ -46,3 +58,10 @@ function scaleto120(a,b)
 end
 
 scatter!([scaleto120(norm(a, b)...) for a in as for b in bs], aspect_ratio=:equal)
+
+
+# Sign 
+Trivial(1, 0) |> sign
+Trivial(1,-1) |> sign
+Trivial(2,-1) |> sign
+Trivial(0,0) |> sign
