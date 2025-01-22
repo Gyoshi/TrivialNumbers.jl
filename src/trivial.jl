@@ -26,8 +26,8 @@ function triplet(x::Trivial)
     triplet = (0, -x.a, -x.a-x.b)
     return triplet .- min(triplet...)
 end
-isreal(x::Trivial) = x.b == 0
-real(x::Trivial) = x.a
+Base.isreal(x::Trivial) = x.b == 0
+Base.real(x::Trivial) = x.a
 
 # Operators
 Base.:+(x::Trivial, y::Trivial) = Trivial(x.a + y.a, x.b + y.b)
