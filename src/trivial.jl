@@ -9,7 +9,7 @@ end
 # Trivial(a::S, b::T) where {S<:Number,T<:Number} = Trivial(promote(a,b)...)
 Trivial(a, b) = Trivial{promote_type(typeof(a), typeof(b))}(a,b)
 Trivial(a, b, c) = Trivial(a-b, b-c)
-Trivial(x::Real) = Trivial(x, zero(x))
+# Trivial(x::Real) = Trivial(x, zero(x))
 Trivial(x::T) where T<:Real = Trivial{T}(x, zero(T))
 
 # Promotion
