@@ -26,6 +26,7 @@ function triplet(x::Trivial)
     triplet = (0, -x.a, -x.a-x.b)
     return triplet .- min(triplet...)
 end
+triplet(x::Number) = triplet(Trivial(x))
 Base.isreal(x::Trivial) = x.b == 0
 Base.real(x::Trivial) = x.a
 
@@ -41,7 +42,7 @@ recto(x::Real) = recto(Trivial(x))
 const ╱ = verso(1)
 const ╲ = recto(1)
 
-∥(x::Trivial, y::Trivial) = -(recto(x)+verso(y))
+∥(x::Trivial, y::Trivial) = -(verso(x)+recto(y))
 
 Base.:*(x::Trivial, y::Trivial) = Trivial(x.a*y.a-x.b*y.b, (x.a + x.b)*y.b + x.b*y.a)
 # Base.:*(x::Trivial, y::Trivial) = Trivial(reduce(.+, n.*triplet(op(y)) for (n, op) in zip(triplet(x), [x -> x, verso, recto]))...)
@@ -82,6 +83,7 @@ end
 Base.show(io::IO, x::Trivial) = trivial_show(io, x)
 
 # Relations
+import Base.sign
 function sign(x::Trivial)
     diffs = [x.a, x.b, -x.a-x.b]
     nzeros = sum(diffs.==0...)
@@ -96,14 +98,32 @@ function sign(x::Trivial)
     if kind == :spiral
         npos = sum(diffs .> 0) # number of counterclockwise increases
         polarity = npos == 2 ? +1 : -1
-        rotation = findmin(diffs - circshift(diffs, 1))[2]
+        rotation = findfirst(triplet(x).==maximum(triplet(x)))
     elseif kind == :isosceles
-        npos = sum(diffs - circshift(diffs, 1) .> 0) # number of positive values in triplet
+        npos = sum(triplet(x) .> 0) # number of positive values in triplet(x)t
         polarity = npos == 2 ? -1 : +1
-        rotation = mod(findfirst(diffs .== 0) - 2, 3) + 1
+        # rotation = findfirst(triplet(x) .> 0)
+        
+        if polarity > 0
+        rotation = findfirst(triplet(x).==maximum(triplet(x)))
+        else
+            rotation = mod(findfirst(triplet(x) .== 0), 3) + 1
+        end
+        # rotation = mod(findfirst(diffs .== 0) - 2, 3) + 1
     end 
 
     return (;kind, polarity, rotation)
+end
+sign(x::Number, y::Number, z::Number) = sign(x+recto(y)+verso(z))
+sign(Trivial(1+0.1╱))
+
+Base.:-(a::Number, b::Number, c::Number) = a+verso(b)+recto(c)
+
+function dual(a::Number, b::Number, c::Number)
+    i = triplet(a)
+    j = triplet(b)
+    k = triplet(c)
+    return Trivial(i[1], j[1], k[1]), Trivial(i[2], j[2], k[2]), Trivial(i[3], j[3], k[3])
 end
 
 # ⦦ ⦧
