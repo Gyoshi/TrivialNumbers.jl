@@ -1,31 +1,49 @@
+using StaticArrays
+
 struct Quadrivial{T<:Real} <: Number
-    a :: T
-    b :: T
-    c :: T
+    triplet :: MVector{3,T}
+    diffs :: MVector{3,T}
 end
 
 # Constructors
-Quadrivial(a, b, c) = Quadrivial{promote_type(typeof(a), typeof(b), typeof(c))}(a,b,c)
-Quadrivial(a, b, c, d) = Quadrivial(a-b, a-c, a-d)
-Quadrivial(x::T) where T<:Real = Quadrivial{T}(x, x, x)
+function Quadrivial(triplet::T1, diffs::T2) where {T1<:Vector, T2<:Vector}
+    if !all(triplet-circshift(triplet, -1) .≈ diffs)
+        throw(DomainError((triplet=triplet, diffs=diffs), "Difference array must be equal to the circular-sequential differences of the triplet."))
+    end
+    return Quadrivial{promote_type(T1.parameters[1], T2.parameters[1])}(triplet, diffs)
+end
+Quadrivial(x::Array) = Quadrivial(x, x-circshift(x, -1))
+Quadrivial(a::Real, b::Real, c::Real) = Quadrivial([a,b,c])
+Quadrivial(a::Real, b::Real, c::Real, d::Real) = Quadrivial(a-b, a-c, a-d)
+Quadrivial(x::Real) = Quadrivial(x, x, x)
 
 # Promotion
 Base.convert(::Type{Quadrivial{T}}, z::Quadrivial{T}) where {T<:Real} = z
-Base.convert(::Type{Quadrivial{T}}, z::Quadrivial) where {T<:Real} = Quadrivial{T}(convert(T, z.a), convert(T, z.b), convert(T, z.c))
+Base.convert(::Type{Quadrivial{T}}, z::Quadrivial) where {T<:Real} = Quadrivial{T}(convert(T, triplet(z)[1]), convert(T, z.b), convert(T, z.c))
 Base.convert(::Type{Quadrivial{T}}, x::Real) where {T<:Real} = Quadrivial{T}(convert(T, x), convert(T, x), convert(T, x))
-(::Type{T})(z::Quadrivial) where {T<:Real} = (isreal(z) || isnan(z) ? z.a : throw(InexactError(:convert, T, z)))
+(::Type{T})(z::Quadrivial) where {T<:Real} = (isreal(z) || isnan(z) ? triplet(z)[1] : throw(InexactError(:convert, T, z)))
 Base.promote_rule(::Type{Quadrivial{T}}, ::Type{S}) where {T<:Real, S<:Real} = Quadrivial{promote_type(T,S)}
 Base.promote_rule(::Type{Quadrivial{T}}, ::Type{Quadrivial{S}}) where {T<:Real, S<:Real} = Quadrivial{promote_type(T,S)}
 
 # Util
-triplet(x::Quadrivial) = (x.a, x.b, x.c)
+Base.getproperty(x::Quadrivial, _::Symbol) = error("Quadrivial struct fields are private to avoid passing of mutables. Use `triplet()` instead.")
+triplet(x::Quadrivial) = Tuple(getfield(x, :triplet))
 function quadruplet(x::Quadrivial)
-    result = (0, -x.a, -x.b, -x.c)
+    result = (0, -triplet(x)[1], -triplet(x)[2], -triplet(x)[3])
     return result .- min(result...)
 end
 quadruplet(x::Number) = quadruplet(Quadrivial(x))
+
+verso(x::Quadrivial) = Quadrivial(triplet(x)[SVector(2,3,1)])
+recto(x::Quadrivial) = Quadrivial(triplet(x)[SVector(3,1,2)])
+verso(x::Number) = verso(Quadrivial(x))
+recto(x::Number) = recto(Quadrivial(x))
+verso(1)
+
+x = Quadrivial(1,2,3)
+
 Base.isreal(x::Quadrivial) = x.a ≈ x.b ≈ x.c 
-Base.real(x::Quadrivial{T}) where T = convert(T, (x + verso(x) + recto(x)).a)/3
+Base.real(x::Quadrivial{T}) where T = convert(T, (x + verso(x) + recto(x)).triplet[1])/3
 Base.imag(x::Quadrivial) = x - real(x)
 
 Base.isnan(z::Quadrivial) = isnan.(triplet(z)) |> any
@@ -48,11 +66,6 @@ Base.:*(x::Quadrivial, y::Quadrivial) = Quadrivial(
     x.b*y.b + (x.c-x.a)*(y.c-y.a),
     x.c*y.c + (x.a-x.b)*(y.a-y.b),
 )
-
-verso(x::Quadrivial) = Quadrivial(x.b, x.c, x.a)
-recto(x::Quadrivial) = Quadrivial(x.c, x.a, x.b)
-verso(x::Number) = verso(Quadrivial(x))
-recto(x::Number) = recto(Quadrivial(x))
 
 inner_product(x, y, z) = x*recto(y)*verso(z)
 abs3(x::Quadrivial) = (x*verso(x)*recto(x)).a

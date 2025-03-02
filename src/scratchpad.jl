@@ -294,11 +294,12 @@ e1 = (g+i)/abs(g+i)
 e2 = (g+j)/abs(g+j)
 e3 = (g+k)/abs(g+k)
 
-inner_product(x, y, z) = (abs3(x + y + z) - (abs3(x) + abs3(y) + abs3(z)))/24
-inner_product(e1,e2,e3)
-inner_product(-e1,-e2,-e3)
-inner_product(i, j, k)
-abs3(e1)
+# inner_product(x, y, z) = (abs3(x + y + z) - (abs3(x) + abs3(y) + abs3(z)))/24
+# inner_product(e1,e2,e3)
+# inner_product(-e1,-e2,-e3)
+# inner_product(e3,e2,e1)
+
+
 
 1/e1-1/e2
 e1-e2
