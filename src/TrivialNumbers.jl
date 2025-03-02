@@ -1,6 +1,7 @@
 module TrivialNumbers
 
 include("trivial.jl")
+include("quadrivial.jl")
 
 export 
     Trivial
@@ -12,4 +13,10 @@ export
     ╲
     ∥
     dual
+
+    Quadrivial
+    quadruplet
+    i
+    j
+    k
 end

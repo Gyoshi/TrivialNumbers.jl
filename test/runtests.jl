@@ -1,7 +1,7 @@
 using TrivialNumbers
 using Test
 
-@testset "TrivialNumbers.jl" begin
+@testset "trivial.jl" begin
     ╱ = TrivialNumbers.╱
     ╲ = TrivialNumbers.╲
     x = (1+2╱)
@@ -11,4 +11,11 @@ using Test
     @test TrivialNumbers.verso(Trivial(0, 2, 3)) == Trivial(3, 0, 2)
     @test -(x,y,z) == -(TrivialNumbers.dual(x,y,z)...)
     @test exp(0.5+╲) |> abs ≈ 1
+end
+
+@testset "quadrivial.jl" begin
+    # Check for succesful construction/throwing around floating point errors
+    @test TrivialNumbers.Quadrivial([1,1,2], [1e-20,-1,1]) isa TrivialNumbers.Quadrivial
+    @test TrivialNumbers.Quadrivial([0, 1e-20, 2], [-1e-20, -2, 2]) isa TrivialNumbers.Quadrivial
+    @test_throws DomainError TrivialNumbers.Quadrivial([0, 1, 1], [1, 1, -2])
 end

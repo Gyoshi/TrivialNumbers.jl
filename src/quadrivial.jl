@@ -7,12 +7,13 @@ end
 
 # Constructors
 function Quadrivial(triplet::T1, diffs::T2) where {T1<:Vector, T2<:Vector}
-    if !all(triplet-circshift(triplet, -1) .≈ diffs)
+    eps
+    if !all(triplet .≈ circshift(triplet, -1) + diffs) && !all(triplet - circshift(triplet, -1) .≈ diffs) # double check because 0 ≈ only zero
         throw(DomainError((triplet=triplet, diffs=diffs), "Difference array must be equal to the circular-sequential differences of the triplet."))
     end
     return Quadrivial{promote_type(T1.parameters[1], T2.parameters[1])}(triplet, diffs)
 end
-Quadrivial(x::Array) = Quadrivial(x, x-circshift(x, -1))
+Quadrivial(x::AbstractArray) = Quadrivial(x, x-circshift(x, -1))
 Quadrivial(a::Real, b::Real, c::Real) = Quadrivial([a,b,c])
 Quadrivial(a::Real, b::Real, c::Real, d::Real) = Quadrivial(a-b, a-c, a-d)
 Quadrivial(x::Real) = Quadrivial(x, x, x)
@@ -27,20 +28,26 @@ Base.promote_rule(::Type{Quadrivial{T}}, ::Type{Quadrivial{S}}) where {T<:Real, 
 
 # Util
 Base.getproperty(x::Quadrivial, _::Symbol) = error("Quadrivial struct fields are private to avoid passing of mutables. Use `triplet()` instead.")
-triplet(x::Quadrivial) = Tuple(getfield(x, :triplet))
+triplet(x::Quadrivial) = copy(getfield(x, :triplet))
+diffstriplet(x::Quadrivial) = copy(getfield(x, :diffs))
 function quadruplet(x::Quadrivial)
     result = (0, -triplet(x)[1], -triplet(x)[2], -triplet(x)[3])
     return result .- min(result...)
 end
 quadruplet(x::Number) = quadruplet(Quadrivial(x))
 
-verso(x::Quadrivial) = Quadrivial(triplet(x)[SVector(2,3,1)])
-recto(x::Quadrivial) = Quadrivial(triplet(x)[SVector(3,1,2)])
+verso(x::Quadrivial) = Quadrivial(triplet(x)[SVector(2,3,1)], diffstriplet(x)[SVector(2,3,1)])
+recto(x::Quadrivial) = Quadrivial(triplet(x)[SVector(3,1,2)], diffstriplet(x)[SVector(3,1,2)])
 verso(x::Number) = verso(Quadrivial(x))
 recto(x::Number) = recto(Quadrivial(x))
-verso(1)
 
-x = Quadrivial(1,2,3)
+x = [0,1e-20,2]
+diffs = [-1e-20, -2, 2]
+x - circshift(x, -1)
+circshift(x, -1) + diffs
+x = Quadrivial([1,1,2], [1e-20,-1,1])
+x = Quadrivial([0, 1e-20, 2], [-1e-20, -2, 2])
+verso(x)
 
 Base.isreal(x::Quadrivial) = x.a ≈ x.b ≈ x.c 
 Base.real(x::Quadrivial{T}) where T = convert(T, (x + verso(x) + recto(x)).triplet[1])/3
