@@ -28,7 +28,13 @@ function triplet(x::Trivial)
 end
 triplet(x::Number) = triplet(Trivial(x))
 Base.isreal(x::Trivial) = x.b == 0
-Base.real(x::Trivial) = x.a
+Base.real(x::Trivial) = x.a + 0.5*x.b
+
+Base.isnan(z::Trivial) = isnan.(duplet(z)) |> any
+Base.isinf(z::Trivial) = isinf.(duplet(z)) |> any
+Base.isfinite(z::Trivial) = isfinite.(duplet(z)) |> all
+
+Base.:≈(a::Trivial, b::Trivial) = all(duplet(a) .≈ duplet(b))
 
 # Operators
 Base.:+(x::Trivial, y::Trivial) = Trivial(x.a + y.a, x.b + y.b)
@@ -55,16 +61,16 @@ Base.:/(x::Trivial, y::Trivial) = x*inv(y)
 
 # Math
 function Base.exp(x::Trivial)
-    term = 1
+    term = one(Trivial)
     n = 0
     sum = 0.
 
     while abs(term) >= eps(sum|>abs)
         n += 1
-        term *= x/n
         sum += term
+        term *= x/n
     end
-    return sum + 1
+    return sum
 end
 
 # Output
@@ -114,7 +120,7 @@ function sign(x::Trivial)
 
     return (;kind, polarity, rotation)
 end
-sign(x::Number, y::Number, z::Number) = sign(x+recto(y)+verso(z))
+sign(x::Trivial, y::Trivial, z::Trivial) = sign(x+recto(y)+verso(z))
 sign(Trivial(1+0.1╱))
 
 Base.:-(a::Number, b::Number, c::Number) = a+verso(b)+recto(c)

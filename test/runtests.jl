@@ -10,4 +10,5 @@ using Test
     @test TrivialNumbers.conj(1+2TrivialNumbers.╱) == 1+2TrivialNumbers.╲
     @test TrivialNumbers.verso(Trivial(0, 2, 3)) == Trivial(3, 0, 2)
     @test -(x,y,z) == -(TrivialNumbers.dual(x,y,z)...)
+    @test exp(0.5+╲) |> abs ≈ 1
 end
