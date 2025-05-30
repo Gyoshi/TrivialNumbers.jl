@@ -44,6 +44,12 @@ ex = -3b^2 + 2(c+a)*b + (c-a)^2
 ex = -3c^2 + 2(a+b)*c + (a-b)^2
 substitute(ex |> expand, [a^2 => 4n^2 - 4n*ϵ, a => 2n-ϵ, b => n, c => n]) |> expand
 
+##
+@variables a, b, c, α, β, γ
+A = [a β -β; -γ b γ; α -α c]
+
+B = inv(A) .|> expand
+
 # V_C5
 # @variables x[0:4], r
 
