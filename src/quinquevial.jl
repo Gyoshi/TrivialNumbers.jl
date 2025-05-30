@@ -33,16 +33,16 @@ function quintuplet(x::Quinquevial)
 end
 quintuplet(x::Number) = quintuplet(Quinquevial(x))
 
-lconj(x::Quinquevial) = Quinquevial(quadruplet(x)[SVector(2,4,1,3)])
+lconj(x::Quinquevial) = Quinquevial(quadruplet(x)[SVector(3,1,4,2)])
 bconj(x::Quinquevial) = Quinquevial(quadruplet(x)[SVector(4,3,2,1)])
-rconj(x::Quinquevial) = Quinquevial(quadruplet(x)[SVector(3,1,4,2)])
+rconj(x::Quinquevial) = Quinquevial(quadruplet(x)[SVector(2,4,1,3)])
 lconj(x::Number) = Quinquevial(lconj(Quinquevial(x)))
 bconj(x::Number) = Quinquevial(bconj(Quinquevial(x)))
 rconj(x::Number) = Quinquevial(rconj(Quinquevial(x)))
 quinq_conjugates = [x->x, lconj, bconj, rconj]
 
 Base.isreal(x::Quinquevial) = reduce(≈, quadruplet(x))
-Base.real(x::Quinquevial{T}) where T = convert(T, quadruplet(sum(c(x) for c in quinq_conjugates)) |> first)/4
+Base.real(x::Quinquevial{T}) where T = convert(T, -quadruplet(sum(c(x) for c in quinq_conjugates)) |> first)/4
 Base.imag(x::Quinquevial) = x - real(x)
 
 Base.isnan(z::Quinquevial) = isnan.(quadruplet(z)) |> any
@@ -165,7 +165,6 @@ function Quinquevial_show(io::IO, x::Quinquevial{T}) where {T}
             end
             first_plus = false
         end
-        println(signbit(nat), nat)
         if symb == "" || nat != one(T)
             show(io, nat)
         end

@@ -333,3 +333,37 @@ plot(-1:0.01:1, x-> f(2,x,2))
 2Quadrivial(2,1,3) |> triplet
 
 Quadrivial(1,50, -1-50)
+
+
+## Quinquevial numbers
+include("quinquevial.jl")
+
+using Plots
+nums = [Quinquevial(2rand(5)...) for _ in 1:100_000];
+# scatter(abs4.(nums))
+invs = 1 ./ abs4.(nums)
+# scatter(invs)
+scatter(real.(nums[1:2000].^2))
+singularity = findfirst(invs.>1e5)
+q5 = nums[singularity] |> quintuplet
+abs4(Quinquevial(q5...))
+abs(16+24r+32r^3)/16
+abs(4+6r+8r^3+r^4)/4
+small = 2r - 4.3r^2 + 3.87r^3 - 3.06r^4
+abs(small)
+nums[singularity] ^2 |> real
+
+abs(exp((0.25+r)))
+abs(exp(0.25+r^2))
+x = exp(4π*(0.25+r))
+real(x)
+abs(x)
+imag(x)
+
+plot(0:0.1:3π, x->real(exp(x*(0.25+r))))
+plot(0:0.1:8π, x->real(exp(x*(0.5+r+r^2))))
+plot(0:0.1:4π, x->real(exp(x*(r+r^2-r^3-r^4))))
+
+
+
+abs(exp((r-r^2)))
