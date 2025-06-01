@@ -41,7 +41,7 @@ bconj(x::Number) = Quinquevial(bconj(Quinquevial(x)))
 rconj(x::Number) = Quinquevial(rconj(Quinquevial(x)))
 quinq_conjugates = [x->x, lconj, bconj, rconj]
 
-Base.isreal(x::Quinquevial) = reduce(≈, quadruplet(x))
+Base.isreal(x::Quinquevial) = all(getfield(x, :quadruplet)|>first .≈ getfield(x, :quadruplet))
 Base.real(x::Quinquevial{T}) where T = convert(T, -quadruplet(sum(c(x) for c in quinq_conjugates)) |> first)/4
 Base.imag(x::Quinquevial) = x - real(x)
 

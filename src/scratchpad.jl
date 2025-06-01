@@ -115,6 +115,21 @@ conj(x) |> sign
 ### Quadrivial numbers
 include("quadrivial.jl")
 
+q = i+j
+s = 1//2 + 3//2*i
+s = i - 1//2*verso(q)
+s*verso(s) + 1 ≈ recto(s)
+s^2 - s
+abs3(1+s)
+1 + abs3(s)
+real(s*verso(s))
+
+p1 = i-j
+p2 = j-k
+-1//3 + 2//3*p1 + 1//2*p2
+(2p1 + p2 - 1)
+
+
 x = 3+i + 1+2k
 x = 3-j+k
 

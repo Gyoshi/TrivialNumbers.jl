@@ -23,7 +23,7 @@ Quadrivial(x::Real) = Quadrivial(x, x, x)
 Base.convert(::Type{Quadrivial{T}}, z::Quadrivial{T}) where {T<:Real} = z
 Base.convert(::Type{Quadrivial{T}}, z::Quadrivial) where {T<:Real} = Quadrivial(convert.(T, triplet(z))...)
 Base.convert(::Type{Quadrivial{T}}, x::Real) where {T<:Real} = Quadrivial(convert(T, x), convert(T, x), convert(T, x))
-(::Type{T})(z::Quadrivial) where {T<:Real} = (isreal(z) || isnan(z) ? triplet(z)[1] : throw(InexactError(:convert, T, z)))
+(::Type{T})(z::Quadrivial) where {T<:Real} = ((isreal(z) || isnan(z)) ? triplet(z)[1] : throw(InexactError(:convert, T, z)))
 Base.promote_rule(::Type{Quadrivial{T}}, ::Type{S}) where {T<:Real, S<:Real} = Quadrivial{promote_type(T,S)}
 Base.promote_rule(::Type{Quadrivial{T}}, ::Type{Quadrivial{S}}) where {T<:Real, S<:Real} = Quadrivial{promote_type(T,S)}
 
@@ -37,13 +37,14 @@ function quadruplet(x::Quadrivial)
 end
 quadruplet(x::Number) = quadruplet(Quadrivial(x))
 
-verso(x::Quadrivial) = Quadrivial(triplet(x)[SVector(2,3,1)], diffstriplet(x)[SVector(2,3,1)])
-recto(x::Quadrivial) = Quadrivial(triplet(x)[SVector(3,1,2)], diffstriplet(x)[SVector(3,1,2)])
+verso(x::Quadrivial) = Quadrivial(triplet(x)[SVector(3,1,2)], diffstriplet(x)[SVector(3,1,2)])
+recto(x::Quadrivial) = Quadrivial(triplet(x)[SVector(2,3,1)], diffstriplet(x)[SVector(2,3,1)])
 verso(x::Number) = verso(Quadrivial(x))
 recto(x::Number) = recto(Quadrivial(x))
 
-Base.isreal(x::Quadrivial) = reduce(≈, triplet(x))
-Base.real(x::Quadrivial{T}) where T = convert(T, triplet(x + verso(x) + recto(x))[1])/3
+Base.isreal(x::Quadrivial) = all(getfield(x, :triplet)|>first .≈ getfield(x, :triplet))
+Base.real(x::Quadrivial{T}) where T = convert(T, (triplet(x + verso(x) + recto(x))/3)[1])
+# Base.real(x::Quadrivial{T}) where T<:Rational = convert(T, triplet(x + verso(x) + recto(x))[1])//3
 Base.imag(x::Quadrivial) = x - real(x)
 
 Base.isnan(z::Quadrivial) = isnan.(triplet(z)) |> any
@@ -77,7 +78,8 @@ Base.:*(x::Real, y::Quadrivial) = Quadrivial(x*triplet(y), x*diffstriplet(y))
 Base.:*(x::Quadrivial, y::Real) = y*x
 function Base.:*(x::Quadrivial, y::Quadrivial)
     w = mulmatrix(x)*mulmatrix(y)
-    diffs = [w[3,1]-w[3,2], w[1,2]-w[1,3], w[2,3]-w[2,1]]/2
+    # diffs = [w[3,1]-w[3,2], w[1,2]-w[1,3], w[2,3]-w[2,1]]/2
+    diffs = [w[3,1], w[1,2], w[2,3]]
     # return Quadrivial((diag(w) + diffs + diag(w)[SA[2,3,1]])/2, diffs)
     return Quadrivial(diag(w), diffs)
 end
@@ -94,6 +96,10 @@ Base.:/(x::Quadrivial, y::Real) = Quadrivial(triplet(x)/y, diffstriplet(x)/y)
 Base.inv(x::Quadrivial) = Quadrivial(triplet(verso(x)*recto(x))./abs3(x)...)
 Base.:/(x::Quadrivial, y::Quadrivial) = x*inv(y)
 
+Base.://(x::Quadrivial, y::Union{Int, Rational}) = Quadrivial(triplet(x)//y, diffstriplet(x)//y)
+rationalinv(x::Quadrivial{T}) where T<:Union{Int, Rational} = Quadrivial(triplet(verso(x)*recto(x)).//abs3(x//1)...)
+Base.://(x::Quadrivial{T}, y::Quadrivial{T}) where T<:Union{Int, Rational} = x*rationalinv(y)
+
 # Math
 function Base.exp(x::Quadrivial)
     term = one(Quadrivial)
@@ -109,7 +115,7 @@ function Base.exp(x::Quadrivial)
 end
 
 x = 1 + 0.8i
-exp(x)
+# exp(x)
 
 trip = [1.4109347442680748e-12, 0.0002733125149911817, 0.00027331251499118165]
 diffs = [-0.0002733125135802469, 0.0, 0.00027331251358024696]
